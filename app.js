@@ -68,11 +68,11 @@ const outputResult = (dbObject) => {
 app.get("/todos/", async (request, response) => {
   let data = null;
   let searchQuery = "";
-  let requestQuery=request.query;
+  let requestQuery = request.query;
   const { status, priority, search_q, category } = request.query;
   switch (true) {
     //SCENARIO 3
-    case status !== priority !== undefined;:
+    case hasPriorityAndStatusProperties(request.query):
       if (priority === "HIGH" || priority === "MEDIUM" || priority === "LOW") {
         if (
           status === "TO DO" ||
@@ -93,7 +93,7 @@ app.get("/todos/", async (request, response) => {
       }
       break;
     //SCENARIO 1
-    case status!==undefined:
+    case hasStatusProperties(request.query):
       if (status === "TO DO" || status === "IN PROGRESS" || status === "DONE") {
         searchQuery = `SELECT *  FROM todo 
                 WHERE status='${status}';`;
@@ -106,7 +106,7 @@ app.get("/todos/", async (request, response) => {
       break;
 
     //SCENARIO 2
-    case priority!==undefined:
+    case hasPriorityProperties(request.query):
       if (priority === "HIGH" || priority === "MEDIUM" || priority === "LOW") {
         searchQuery = `SELECT *  FROM todo 
                 WHERE priority='${priority}';`;
@@ -119,7 +119,7 @@ app.get("/todos/", async (request, response) => {
       break;
 
     //SCENARIO 4
-    case search_q!==undefined:
+    case hasSearch_qProperties(request.query):
       searchQuery = `SELECT *  FROM todo 
                 WHERE todo LIKE '%${search_q}%';`;
       data = await db.all(searchQuery);
@@ -127,7 +127,7 @@ app.get("/todos/", async (request, response) => {
       break;
 
     //SCENARIO 5
-    case category!==undefined && status !==undefined:
+    case hasCategoryAndStatusProperties(request.query):
       if (
         category === "WORK" ||
         category === "HOME" ||
@@ -152,7 +152,7 @@ app.get("/todos/", async (request, response) => {
       }
       break;
     //SCENARIO 6
-    case category!==undefined:
+    case hasCategoryProperties(request.query):
       if (
         category === "WORK" ||
         category === "HOME" ||
@@ -168,7 +168,7 @@ app.get("/todos/", async (request, response) => {
       }
       break;
     //SCENARIO 7
-    case priority!==undefined && category!==undefined:
+    case hasPriorityAndCategoryProperties(request.query):
       if (
         category === "WORK" ||
         category === "HOME" ||
@@ -198,6 +198,7 @@ app.get("/todos/", async (request, response) => {
 //API 2
 app.get("/todos/:todoId/", async (request, response) => {
   const { todoId } = request.params;
+  console.log(todoId);
   const getTodoQuery = `SELECT * FROM todo WHERE id=${todoId};`;
   const todoResult = await db.get(getTodoQuery);
   response.send(outputResult(todoResult));
